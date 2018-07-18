@@ -1,0 +1,26 @@
+{
+  "name": "s3-mongodb",
+  "version": "1.0.0",
+  "description": "Practice using s3",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anthonyrodarte/s3-mongodb.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anthonyrodarte/s3-mongodb/issues"
+  },
+  "homepage": "https://github.com/anthonyrodarte/s3-mongodb#readme",
+  "dependencies": {
+    "s3": "^4.4.0"
+  },
+  "devDependencies": {
+    "dotenv": "^6.0.0"
+  }
+}
