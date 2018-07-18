@@ -1,7 +1,10 @@
 require('dotenv/config')
-var s3 = require('s3')
+const uuid = require('uuid/v4')
+const s3 = require('s3')
+const mongodb = require('mongodb')
+const { MongoClient } = mongodb
 
-var client = s3.createClient({
+const s3client = s3.createClient({
   maxAsyncS3: 20,
   s3RetryCount: 3,
   s3RetryDelay: 1000,
@@ -13,7 +16,7 @@ var client = s3.createClient({
   },
 })
 
-var params = {
+const params = {
   localFile: "./test.png",
 
   s3Params: {
@@ -21,14 +24,33 @@ var params = {
     Key: "randomscreenshot1",
   },
 }
-var uploader = client.uploadFile(params)
-uploader.on('error', function(err) {
-  console.error("unable to upload:", err.stack)
-});
-uploader.on('progress', function() {
-  console.log("progress", uploader.progressMd5Amount,
-            uploader.progressAmount, uploader.progressTotal)
-});
-uploader.on('end', function() {
-  console.log("upload complete")
-})
+
+MongoClient
+  .connect('mongodb://' + process.env.MONGOUSER + ':' + process.env.MONGOPW + '@ds141641.mlab.com:41641/s3-ids', {useNewUrlParser: true})
+  .then(client => {
+  const db = client.db('s3-ids')
+  const collection = db.collection('keys')
+  const uploader = s3client.uploadFile(params)
+  uploader.on('error', function(err) {
+    console.error("unable to upload:", err.stack)
+  })
+  uploader.on('progress', function() {
+    console.log("progress", uploader.progressMd5Amount,
+              uploader.progressAmount, uploader.progressTotal)
+  })
+  uploader.on('end', function() {
+    console.log("upload complete")
+    return params.s3Params.Key
+  })
+  const realKey = {
+    id: uuid(),
+    key: params.s3Params.Key
+  }
+  return collection
+  .insertOne(realKey)
+  .then(() => client.close())
+  })
+  .catch(err => {
+    console.error(err)
+    process.exit(1)
+  })
