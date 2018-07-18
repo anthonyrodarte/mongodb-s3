@@ -1,17 +1,28 @@
 require('dotenv/config')
+const uuid = require('uuid/v4')
 const s3 = require('s3')
 const mongodb = require('mongodb')
 const { MongoClient } = mongodb
 
-MongoClient.connect('mongodb://' + process.env.MONGOUSER + ':' + process.env.MONGOPW + '@ds141641.mlab.com:41641/s3-ids', (err, db) => {
-  if (err) {
-    return console.log(err)
+MongoClient
+  .connect('mongodb://' + process.env.MONGOUSER + ':' + process.env.MONGOPW + '@ds141641.mlab.com:41641/s3-ids', {useNewUrlParser: true})
+  .then(client => {
+  const db = client.db('s3-ids')
+  const collection = db.collection('keys')
+  const testKey = {
+    id: uuid(),
+    key: 'this is a test key'
   }
-  console.log('You are connected to the database!')
-  db.close()
-})
+  return collection
+  .insertOne(testKey)
+  .then(() => client.close())
+  })
+  .catch(err => {
+    console.error(err)
+    process.exit(1)
+  })
 
-const client = s3.createClient({
+const s3client = s3.createClient({
   maxAsyncS3: 20,
   s3RetryCount: 3,
   s3RetryDelay: 1000,
@@ -31,7 +42,7 @@ const params = {
     Key: "randomscreenshot1",
   },
 }
-const uploader = client.uploadFile(params)
+const uploader = s3client.uploadFile(params)
 uploader.on('error', function(err) {
   console.error("unable to upload:", err.stack)
 });
