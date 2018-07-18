@@ -1,7 +1,17 @@
 require('dotenv/config')
-var s3 = require('s3')
+const s3 = require('s3')
+const mongodb = require('mongodb')
+const { MongoClient } = mongodb
 
-var client = s3.createClient({
+MongoClient.connect('mongodb://' + process.env.MONGOUSER + ':' + process.env.MONGOPW + '@ds141641.mlab.com:41641/s3-ids', (err, db) => {
+  if (err) {
+    return console.log(err)
+  }
+  console.log('You are connected to the database!')
+  db.close()
+})
+
+const client = s3.createClient({
   maxAsyncS3: 20,
   s3RetryCount: 3,
   s3RetryDelay: 1000,
@@ -13,7 +23,7 @@ var client = s3.createClient({
   },
 })
 
-var params = {
+const params = {
   localFile: "./test.png",
 
   s3Params: {
@@ -21,7 +31,7 @@ var params = {
     Key: "randomscreenshot1",
   },
 }
-var uploader = client.uploadFile(params)
+const uploader = client.uploadFile(params)
 uploader.on('error', function(err) {
   console.error("unable to upload:", err.stack)
 });
