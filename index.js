@@ -25,6 +25,26 @@ const params = {
   },
 }
 
+const params1 = {
+  localFile: "./random.png",
+
+  s3Params: {
+    Bucket: "s3practice12",
+    Key: "randomscreenshot1",
+  },
+}
+
+const downloader = s3client.downloadFile(params1);
+downloader.on('error', function(err) {
+  console.error("unable to download:", err.stack)
+})
+downloader.on('progress', function() {
+  console.log("progress", downloader.progressAmount, downloader.progressTotal)
+})
+downloader.on('end', function() {
+  console.log("done downloading")
+})
+
 MongoClient
   .connect('mongodb://' + process.env.MONGOUSER + ':' + process.env.MONGOPW + '@ds141641.mlab.com:41641/s3-ids', {useNewUrlParser: true})
   .then(client => {
